@@ -261,60 +261,6 @@ fn test_a_coeff() {
     assert_eq!(Fq::from_repr(FqRepr::from(2)).unwrap(), A_COEFF);
 }
 
-/*
-    // FROBENIUS_COEFF_FQ2_C1 = [Fq(-1)**(((q^0) - 1) / 2), Fq(-1)**(((q^1) - 1) / 2)]
-    // FROBENIUS_COEFF_FQ6_C1: [Fq2; 6] = [ Fq2(u + 1)**(((q^i) - 1) / 3) ] for i = 0, .. , 5
-
-fn test_frob_coeffs() {
-    let mut nqr = Fq::one();
-    nqr.negate();
-
-    assert_eq!(FROBENIUS_COEFF_FQ2_C1[0], Fq::one());
-    assert_eq!(
-        FROBENIUS_COEFF_FQ2_C1[1],
-        nqr.pow([
-            0xdcff7fffffffd555,
-            0xf55ffff58a9ffff,
-            0xb39869507b587b12,
-            0xb23ba5c279c2895f,
-            0x258dd3db21a5d66b,
-            0xd0088f51cbff34d
-        ])
-    );
-
-    let nqr = Fq2 {
-        c0: Fq::one(),
-        c1: Fq::one(),
-    };
-
-    assert_eq!(FROBENIUS_COEFF_FQ2_C1[0], Fq2::one());
-    assert_eq!(
-        FROBENIUS_COEFF_FQ2_C1[1],
-        nqr.pow([
-            0x9354ffffffffe38e,
-            0xa395554e5c6aaaa,
-            0xcd104635a790520c,
-            0xcc27c3d6fbd7063f,
-            0x190937e76bc3e447,
-            0x8ab05f8bdd54cde
-        ])
-    );
-
-    assert_eq!(FROBENIUS_COEFF_FQ2_C2[0], Fq2::one());
-    assert_eq!(
-        FROBENIUS_COEFF_FQ2_C2[1],
-        nqr.pow([
-            0x26a9ffffffffc71c,
-            0x1472aaa9cb8d5555,
-            0x9a208c6b4f20a418,
-            0x984f87adf7ae0c7f,
-            0x32126fced787c88f,
-            0x11560bf17baa99bc
-        ])
-    );
-}
-*/
-
 #[test]
 fn test_neg_one() {
     let mut o = Fq::one();
@@ -417,150 +363,6 @@ fn test_fq_repr_is_zero() {
     assert!(!FqRepr([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]).is_zero());
 }
 
-/*
-#[test]
-fn test_fq_repr_div2() {
-    let mut a = FqRepr([
-        0x8b0ad39f8dd7482a,
-        0x147221c9a7178b69,
-        0x54764cb08d8a6aa0,
-        0x8519d708e1d83041,
-        0x41f82777bd13fdb,
-        0xf43944578f9b771b,
-    ]);
-    a.div2();
-    assert_eq!(
-        a,
-        FqRepr([
-            0xc58569cfc6eba415,
-            0xa3910e4d38bc5b4,
-            0xaa3b265846c53550,
-            0xc28ceb8470ec1820,
-            0x820fc13bbde89fed,
-            0x7a1ca22bc7cdbb8d
-        ])
-    );
-    for _ in 0..10 {
-        a.div2();
-    }
-    assert_eq!(
-        a,
-        FqRepr([
-            0x6d31615a73f1bae9,
-            0x54028e443934e2f1,
-            0x82a8ec99611b14d,
-            0xfb70a33ae11c3b06,
-            0xe36083f04eef7a27,
-            0x1e87288af1f36e
-        ])
-    );
-    for _ in 0..300 {
-        a.div2();
-    }
-    assert_eq!(a, FqRepr([0x7288af1f36ee3608, 0x1e8, 0x0, 0x0, 0x0, 0x0]));
-    for _ in 0..50 {
-        a.div2();
-    }
-    assert_eq!(a, FqRepr([0x7a1ca2, 0x0, 0x0, 0x0, 0x0, 0x0]));
-    for _ in 0..22 {
-        a.div2();
-    }
-    assert_eq!(a, FqRepr([0x1, 0x0, 0x0, 0x0, 0x0, 0x0]));
-    a.div2();
-    assert!(a.is_zero());
-}
-
-#[test]
-fn test_fq_repr_shr() {
-    let mut a = FqRepr([
-        0xaa5cdd6172847ffd,
-        0x43242c06aed55287,
-        0x9ddd5b312f3dd104,
-        0xc5541fd48046b7e7,
-        0x16080cf4071e0b05,
-        0x1225f2901aea514e,
-    ]);
-    a.shr(0);
-    assert_eq!(
-        a,
-        FqRepr([
-            0xaa5cdd6172847ffd,
-            0x43242c06aed55287,
-            0x9ddd5b312f3dd104,
-            0xc5541fd48046b7e7,
-            0x16080cf4071e0b05,
-            0x1225f2901aea514e
-        ])
-    );
-    a.shr(1);
-    assert_eq!(
-        a,
-        FqRepr([
-            0xd52e6eb0b9423ffe,
-            0x21921603576aa943,
-            0xceeead98979ee882,
-            0xe2aa0fea40235bf3,
-            0xb04067a038f0582,
-            0x912f9480d7528a7
-        ])
-    );
-    a.shr(50);
-    assert_eq!(
-        a,
-        FqRepr([
-            0x8580d5daaa50f54b,
-            0xab6625e7ba208864,
-            0x83fa9008d6fcf3bb,
-            0x19e80e3c160b8aa,
-            0xbe52035d4a29c2c1,
-            0x244
-        ])
-    );
-    a.shr(130);
-    assert_eq!(
-        a,
-        FqRepr([
-            0xa0fea40235bf3cee,
-            0x4067a038f0582e2a,
-            0x2f9480d7528a70b0,
-            0x91,
-            0x0,
-            0x0
-        ])
-    );
-    a.shr(64);
-    assert_eq!(
-        a,
-        FqRepr([0x4067a038f0582e2a, 0x2f9480d7528a70b0, 0x91, 0x0, 0x0, 0x0])
-    );
-}
-
-#[test]
-fn test_fq_repr_mul2() {
-    let mut a = FqRepr::from(23712937547);
-    a.mul2();
-    assert_eq!(a, FqRepr([0xb0acd6c96, 0x0, 0x0, 0x0, 0x0, 0x0]));
-    for _ in 0..60 {
-        a.mul2();
-    }
-    assert_eq!(
-        a,
-        FqRepr([0x6000000000000000, 0xb0acd6c9, 0x0, 0x0, 0x0, 0x0])
-    );
-    for _ in 0..300 {
-        a.mul2();
-    }
-    assert_eq!(a, FqRepr([0x0, 0x0, 0x0, 0x0, 0x0, 0xcd6c960000000000]));
-    for _ in 0..17 {
-        a.mul2();
-    }
-    assert_eq!(a, FqRepr([0x0, 0x0, 0x0, 0x0, 0x0, 0x2c00000000000000]));
-    for _ in 0..6 {
-        a.mul2();
-    }
-    assert!(a.is_zero());
-}
-
 #[test]
 fn test_fq_repr_num_bits() {
     let mut a = FqRepr::from(0);
@@ -576,33 +378,6 @@ fn test_fq_repr_num_bits() {
 #[test]
 fn test_fq_repr_sub_noborrow() {
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
-
-    let mut t = FqRepr([
-        0x827a4a08041ebd9,
-        0x3c239f3dcc8f0d6b,
-        0x9ab46a912d555364,
-        0x196936b17b43910b,
-        0xad0eb3948a5c34fd,
-        0xd56f7b5ab8b5ce8,
-    ]);
-    t.sub_noborrow(&FqRepr([
-        0xc7867917187ca02b,
-        0x5d75679d4911ffef,
-        0x8c5b3e48b1a71c15,
-        0x6a427ae846fd66aa,
-        0x7a37e7265ee1eaf9,
-        0x7c0577a26f59d5,
-    ]));
-    assert!(
-        t == FqRepr([
-            0x40a12b8967c54bae,
-            0xdeae37a0837d0d7b,
-            0xe592c487bae374e,
-            0xaf26bbc934462a61,
-            0x32d6cc6e2b7a4a03,
-            0xcdaf23e091c0313
-        ])
-    );
 
     for _ in 0..1000 {
         let mut a = FqRepr::rand(&mut rng);
@@ -630,22 +405,34 @@ fn test_fq_repr_sub_noborrow() {
         assert_eq!(csub_ab, csub_ba);
     }
 
-    // Subtracting q+1 from q should produce -1 (mod 2**384)
+    // Subtracting q+1 from q should produce -1
     let mut qplusone = FqRepr([
-        0xb9feffffffffaaab,
-        0x1eabfffeb153ffff,
-        0x6730d2a0f6b0f624,
-        0x64774b84f38512bf,
-        0x4b1ba7b6434bacd7,
-        0x1a0111ea397fe69a,
+        0x5e9063de245e8001,
+        0xe39d54522cdd119f,
+        0x638810719ac425f0,
+        0x685acce9767254a4,
+        0xb80f0da5cb537e38,
+        0xb117e776f218059d,
+        0x99d124d9a15af79d,
+        0x7fdb925e8a0ed8d,
+        0x5eb7e8f96c97d873,
+        0xb7f997505b8fafed,
+        0x10229022eee2cdad,
+        0x1c4c62d92c411,
     ]);
     qplusone.sub_noborrow(&FqRepr([
-        0xb9feffffffffaaac,
-        0x1eabfffeb153ffff,
-        0x6730d2a0f6b0f624,
-        0x64774b84f38512bf,
-        0x4b1ba7b6434bacd7,
-        0x1a0111ea397fe69a,
+        0x5e9063de245e8002,
+        0xe39d54522cdd119f,
+        0x638810719ac425f0,
+        0x685acce9767254a4,
+        0xb80f0da5cb537e38,
+        0xb117e776f218059d,
+        0x99d124d9a15af79d,
+        0x7fdb925e8a0ed8d,
+        0x5eb7e8f96c97d873,
+        0xb7f997505b8fafed,
+        0x10229022eee2cdad,
+        0x1c4c62d92c411,
     ]));
     assert_eq!(
         qplusone,
@@ -655,7 +442,13 @@ fn test_fq_repr_sub_noborrow() {
             0xffffffffffffffff,
             0xffffffffffffffff,
             0xffffffffffffffff,
-            0xffffffffffffffff
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
         ])
     );
 }
@@ -663,33 +456,6 @@ fn test_fq_repr_sub_noborrow() {
 #[test]
 fn test_fq_repr_add_nocarry() {
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
-
-    let mut t = FqRepr([
-        0x827a4a08041ebd9,
-        0x3c239f3dcc8f0d6b,
-        0x9ab46a912d555364,
-        0x196936b17b43910b,
-        0xad0eb3948a5c34fd,
-        0xd56f7b5ab8b5ce8,
-    ]);
-    t.add_nocarry(&FqRepr([
-        0xc7867917187ca02b,
-        0x5d75679d4911ffef,
-        0x8c5b3e48b1a71c15,
-        0x6a427ae846fd66aa,
-        0x7a37e7265ee1eaf9,
-        0x7c0577a26f59d5,
-    ]));
-    assert!(
-        t == FqRepr([
-            0xcfae1db798be8c04,
-            0x999906db15a10d5a,
-            0x270fa8d9defc6f79,
-            0x83abb199c240f7b6,
-            0x27469abae93e1ff6,
-            0xdd2fd2d4dfab6be
-        ])
-    );
 
     // Test for the associativity of addition.
     for _ in 0..1000 {
@@ -733,14 +499,20 @@ fn test_fq_repr_add_nocarry() {
         assert_eq!(abc, cba);
     }
 
-    // Adding 1 to (2^384 - 1) should produce zero
+    // Adding 1 to (q - 1) should produce zero
     let mut x = FqRepr([
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
+        0xc5e777324a8210bf,
+        0x51d0228bd2d9cb18,
+        0xcbc42bd0cdafcec2,
+        0xef0234cfaee99ea2,
+        0xcae87111aa4ae6c8,
+        0x930899ec2314e834,
+        0x67c4e9228e277244,
+        0xae72762315b0e32b,
+        0x1e431f2d6f0b3251,
+        0xa85518752329c761,
+        0x7add306fcee92c18,
+        0x1497e8ec9e1ce,
     ]);
     x.add_nocarry(&FqRepr::from(1));
     assert!(x.is_zero());
@@ -753,24 +525,6 @@ fn test_fq_is_valid() {
     a.0.sub_noborrow(&FqRepr::from(1));
     assert!(a.is_valid());
     assert!(Fq(FqRepr::from(0)).is_valid());
-    assert!(Fq(FqRepr([
-        0xdf4671abd14dab3e,
-        0xe2dc0c9f534fbd33,
-        0x31ca6c880cc444a6,
-        0x257a67e70ef33359,
-        0xf9b29e493f899b36,
-        0x17c8be1800b9f059
-    ]))
-    .is_valid());
-    assert!(!Fq(FqRepr([
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff
-    ]))
-    .is_valid());
 
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
@@ -782,15 +536,10 @@ fn test_fq_is_valid() {
 
 #[test]
 fn test_fq_add_assign() {
+    /*
     {
         // Random number
         let mut tmp = Fq(FqRepr([
-            0x624434821df92b69,
-            0x503260c04fd2e2ea,
-            0xd9df726e0d16e8ce,
-            0xfbcb39adfd5dfaeb,
-            0x86b8a22b0c88b112,
-            0x165a2ed809e4201b,
         ]));
         assert!(tmp.is_valid());
         // Test that adding zero has no effect.
@@ -798,12 +547,6 @@ fn test_fq_add_assign() {
         assert_eq!(
             tmp,
             Fq(FqRepr([
-                0x624434821df92b69,
-                0x503260c04fd2e2ea,
-                0xd9df726e0d16e8ce,
-                0xfbcb39adfd5dfaeb,
-                0x86b8a22b0c88b112,
-                0x165a2ed809e4201b
             ]))
         );
         // Add one and test for the result.
@@ -811,78 +554,36 @@ fn test_fq_add_assign() {
         assert_eq!(
             tmp,
             Fq(FqRepr([
-                0x624434821df92b6a,
-                0x503260c04fd2e2ea,
-                0xd9df726e0d16e8ce,
-                0xfbcb39adfd5dfaeb,
-                0x86b8a22b0c88b112,
-                0x165a2ed809e4201b
             ]))
         );
         // Add another random number that exercises the reduction.
         tmp.add_assign(&Fq(FqRepr([
-            0x374d8f8ea7a648d8,
-            0xe318bb0ebb8bfa9b,
-            0x613d996f0a95b400,
-            0x9fac233cb7e4fef1,
-            0x67e47552d253c52,
-            0x5c31b227edf25da,
         ])));
         assert_eq!(
             tmp,
             Fq(FqRepr([
-                0xdf92c410c59fc997,
-                0x149f1bd05a0add85,
-                0xd3ec393c20fba6ab,
-                0x37001165c1bde71d,
-                0x421b41c9f662408e,
-                0x21c38104f435f5b
             ]))
         );
         // Add one to (q - 1) and test for the result.
         tmp = Fq(FqRepr([
-            0xb9feffffffffaaaa,
-            0x1eabfffeb153ffff,
-            0x6730d2a0f6b0f624,
-            0x64774b84f38512bf,
-            0x4b1ba7b6434bacd7,
-            0x1a0111ea397fe69a,
         ]));
         tmp.add_assign(&Fq(FqRepr::from(1)));
         assert!(tmp.0.is_zero());
         // Add a random number to another one such that the result is q - 1
         tmp = Fq(FqRepr([
-            0x531221a410efc95b,
-            0x72819306027e9717,
-            0x5ecefb937068b746,
-            0x97de59cd6feaefd7,
-            0xdc35c51158644588,
-            0xb2d176c04f2100,
         ]));
         tmp.add_assign(&Fq(FqRepr([
-            0x66ecde5bef0fe14f,
-            0xac2a6cf8aed568e8,
-            0x861d70d86483edd,
-            0xcc98f1b7839a22e8,
-            0x6ee5e2a4eae7674e,
-            0x194e40737930c599,
         ])));
         assert_eq!(
             tmp,
             Fq(FqRepr([
-                0xb9feffffffffaaaa,
-                0x1eabfffeb153ffff,
-                0x6730d2a0f6b0f624,
-                0x64774b84f38512bf,
-                0x4b1ba7b6434bacd7,
-                0x1a0111ea397fe69a
             ]))
         );
         // Add one to the result and test for it.
         tmp.add_assign(&Fq(FqRepr::from(1)));
         assert!(tmp.0.is_zero());
     }
-
+    */
     // Test associativity
 
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
@@ -909,92 +610,45 @@ fn test_fq_add_assign() {
 
 #[test]
 fn test_fq_sub_assign() {
-    {
-        // Test arbitrary subtraction that tests reduction.
-        let mut tmp = Fq(FqRepr([
-            0x531221a410efc95b,
-            0x72819306027e9717,
-            0x5ecefb937068b746,
-            0x97de59cd6feaefd7,
-            0xdc35c51158644588,
-            0xb2d176c04f2100,
-        ]));
-        tmp.sub_assign(&Fq(FqRepr([
-            0x98910d20877e4ada,
-            0x940c983013f4b8ba,
-            0xf677dc9b8345ba33,
-            0xbef2ce6b7f577eba,
-            0xe1ae288ac3222c44,
-            0x5968bb602790806,
-        ])));
-        assert_eq!(
-            tmp,
-            Fq(FqRepr([
-                0x748014838971292c,
-                0xfd20fad49fddde5c,
-                0xcf87f198e3d3f336,
-                0x3d62d6e6e41883db,
-                0x45a3443cd88dc61b,
-                0x151d57aaf755ff94
-            ]))
-        );
+    /*
+        {
+            // Test arbitrary subtraction that tests reduction.
+            let mut tmp = Fq(FqRepr([
+            ]));
+            tmp.sub_assign(&Fq(FqRepr([
+            ])));
+            assert_eq!(
+                tmp,
+                Fq(FqRepr([
+                ]))
+            );
 
-        // Test the opposite subtraction which doesn't test reduction.
-        tmp = Fq(FqRepr([
-            0x98910d20877e4ada,
-            0x940c983013f4b8ba,
-            0xf677dc9b8345ba33,
-            0xbef2ce6b7f577eba,
-            0xe1ae288ac3222c44,
-            0x5968bb602790806,
-        ]));
-        tmp.sub_assign(&Fq(FqRepr([
-            0x531221a410efc95b,
-            0x72819306027e9717,
-            0x5ecefb937068b746,
-            0x97de59cd6feaefd7,
-            0xdc35c51158644588,
-            0xb2d176c04f2100,
-        ])));
-        assert_eq!(
-            tmp,
-            Fq(FqRepr([
-                0x457eeb7c768e817f,
-                0x218b052a117621a3,
-                0x97a8e10812dd02ed,
-                0x2714749e0f6c8ee3,
-                0x57863796abde6bc,
-                0x4e3ba3f4229e706
-            ]))
-        );
+            // Test the opposite subtraction which doesn't test reduction.
+            tmp = Fq(FqRepr([
+            ]));
+            tmp.sub_assign(&Fq(FqRepr([
+            ])));
+            assert_eq!(
+                tmp,
+                Fq(FqRepr([
+                ]))
+            );
 
-        // Test for sensible results with zero
-        tmp = Fq(FqRepr::from(0));
-        tmp.sub_assign(&Fq(FqRepr::from(0)));
-        assert!(tmp.is_zero());
+            // Test for sensible results with zero
+            tmp = Fq(FqRepr::from(0));
+            tmp.sub_assign(&Fq(FqRepr::from(0)));
+            assert!(tmp.is_zero());
 
-        tmp = Fq(FqRepr([
-            0x98910d20877e4ada,
-            0x940c983013f4b8ba,
-            0xf677dc9b8345ba33,
-            0xbef2ce6b7f577eba,
-            0xe1ae288ac3222c44,
-            0x5968bb602790806,
-        ]));
-        tmp.sub_assign(&Fq(FqRepr::from(0)));
-        assert_eq!(
-            tmp,
-            Fq(FqRepr([
-                0x98910d20877e4ada,
-                0x940c983013f4b8ba,
-                0xf677dc9b8345ba33,
-                0xbef2ce6b7f577eba,
-                0xe1ae288ac3222c44,
-                0x5968bb602790806
-            ]))
-        );
-    }
-
+            tmp = Fq(FqRepr([
+            ]));
+            tmp.sub_assign(&Fq(FqRepr::from(0)));
+            assert_eq!(
+                tmp,
+                Fq(FqRepr([
+                ]))
+            );
+        }
+    */
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
     for _ in 0..1000 {
@@ -1016,29 +670,47 @@ fn test_fq_sub_assign() {
 #[test]
 fn test_fq_mul_assign() {
     let mut tmp = Fq(FqRepr([
-        0xcc6200000020aa8a,
-        0x422800801dd8001a,
-        0x7f4f5e619041c62c,
-        0x8a55171ac70ed2ba,
-        0x3f69cc3a3d07d58b,
-        0xb972455fd09b8ef,
+        0xbf5fe920d1992880,
+        0xe9433a42ccefbff2,
+        0xd7f812c1def8c709,
+        0xc9186f2f58446f50,
+        0xb917d238a7c19af1,
+        0xb8d279edb5f43215,
+        0x1a004589295e39c7,
+        0x53034ee27b5a6dfa,
+        0x39e094c7e6e2ac7f,
+        0xe52b2e27c5435e57,
+        0x5a58f3a8f955e7f,
+        0x1463240606093,
     ]));
     tmp.mul_assign(&Fq(FqRepr([
-        0x329300000030ffcf,
-        0x633c00c02cc40028,
-        0xbef70d925862a942,
-        0x4f7fa2a82a963c17,
-        0xdf1eb2575b8bc051,
-        0x1162b680fb8e9566,
+        0x3f5caa8a351082e0,
+        0x10e2cbfdb8a93405,
+        0xfff3511518ddee13,
+        0x81c6b5eae9770cc6,
+        0xc5ef81f4273603ef,
+        0x11c668d5e825ed48,
+        0xc6f28e3f772ce1c5,
+        0xbf4aa406ab3a9757,
+        0x6984799c3cae5b97,
+        0xde4a63b3a95e8ee5,
+        0xbf4d903aa33977e1,
+        0xd07c25be7743,
     ])));
     assert!(
         tmp == Fq(FqRepr([
-            0x9dc4000001ebfe14,
-            0x2850078997b00193,
-            0xa8197f1abb4d7bf,
-            0xc0309573f4bfe871,
-            0xf48d0923ffaf7620,
-            0x11d4b58c7a926e66
+            0x4b2cd72171331b9d,
+            0x8dde609d06a26f9d,
+            0x13204e1c288c8bbe,
+            0x368291a479d84648,
+            0x1962bb9dabd0c52f,
+            0x43af438a16ac1592,
+            0x3688aad7d4b9919c,
+            0xf031665a127582d7,
+            0x42b3219495400fa8,
+            0xbb04927b51dd808c,
+            0x669d5702378dabcf,
+            0x280f8a033a8f,
         ]))
     );
 
@@ -1084,44 +756,9 @@ fn test_fq_mul_assign() {
         assert_eq!(tmp1, a);
     }
 }
-*/
+
 #[test]
 fn test_fq_squaring() {
-    let mut a = Fq(FqRepr([
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0xffffffffffffffff,
-        0x19ffffffffffffff,
-    ]));
-    assert!(a.is_valid());
-    a.square();
-    assert_eq!(
-        a,
-        Fq::from_repr(FqRepr([
-            0x1cfb28fe7dfbbb86,
-            0x1cfb28fe7dfbbb86,
-            0x24cbe1731577a59,
-            0xcce1d4edc120e66e,
-            0xdc05c659b4e15b27,
-            0x79361e5a802c6a23,
-            0x24bcbe5d51b9a6f,
-            0x24cbe1731577a59,
-            0xcce1d4edc120e66e,
-            0xdc05c659b4e15b27,
-            0x79361e5a802c6a23,
-            0x24bcbe5d51b9a6f
-        ]))
-        .unwrap()
-    );
-
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
     for _ in 0..1000000 {
@@ -1270,37 +907,54 @@ fn test_fq_from_into_repr() {
     // q should not be in the field
     assert!(Fq::from_repr(Fq::char()).is_err());
 
-    /*
     // Multiply some arbitrary representations to see if the result is as expected.
     let a = FqRepr([
-        0x4a49dad4ff6cde2d,
-        0xac62a82a8f51cd50,
-        0x2b1f41ab9f36d640,
-        0x908a387f480735f1,
-        0xae30740c08a875d7,
-        0x6c80918a365ef78,
+        0xbf5fe920d1992880,
+        0xe9433a42ccefbff2,
+        0xd7f812c1def8c709,
+        0xc9186f2f58446f50,
+        0xb917d238a7c19af1,
+        0xb8d279edb5f43215,
+        0x1a004589295e39c7,
+        0x53034ee27b5a6dfa,
+        0x39e094c7e6e2ac7f,
+        0xe52b2e27c5435e57,
+        0x5a58f3a8f955e7f,
+        0x1463240606093,
     ]);
     let mut a_fq = Fq::from_repr(a).unwrap();
     let b = FqRepr([
-        0xbba57917c32f0cf0,
-        0xe7f878cf87f05e5d,
-        0x9498b4292fd27459,
-        0xd59fd94ee4572cfa,
-        0x1f607186d5bb0059,
-        0xb13955f5ac7f6a3,
+        0x3f5caa8a351082e0,
+        0x10e2cbfdb8a93405,
+        0xfff3511518ddee13,
+        0x81c6b5eae9770cc6,
+        0xc5ef81f4273603ef,
+        0x11c668d5e825ed48,
+        0xc6f28e3f772ce1c5,
+        0xbf4aa406ab3a9757,
+        0x6984799c3cae5b97,
+        0xde4a63b3a95e8ee5,
+        0xbf4d903aa33977e1,
+        0xd07c25be7743,
     ]);
     let b_fq = Fq::from_repr(b).unwrap();
     let c = FqRepr([
-        0xf5f70713b717914c,
-        0x355ea5ac64cbbab1,
-        0xce60dd43417ec960,
-        0xf16b9d77b0ad7d10,
-        0xa44c204c1de7cdb7,
-        0x1684487772bc9a5a,
+        0x4b2cd72171331b9d,
+        0x8dde609d06a26f9d,
+        0x13204e1c288c8bbe,
+        0x368291a479d84648,
+        0x1962bb9dabd0c52f,
+        0x43af438a16ac1592,
+        0x3688aad7d4b9919c,
+        0xf031665a127582d7,
+        0x42b3219495400fa8,
+        0xbb04927b51dd808c,
+        0x669d5702378dabcf,
+        0x280f8a033a8f,
     ]);
     a_fq.mul_assign(&b_fq);
     assert_eq!(a_fq.into_repr(), c);
-    */
+
     // Zero should be in the field.
     assert!(Fq::from_repr(FqRepr::from(0)).unwrap().is_zero());
 

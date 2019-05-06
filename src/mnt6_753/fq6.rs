@@ -135,35 +135,6 @@ impl Field for Fq6 {
 use rand::{SeedableRng, XorShiftRng};
 
 #[test]
-fn test_fq6_mul_by_014() {
-    let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
-
-    for _ in 0..1000 {
-        let c0 = Fq::rand(&mut rng);
-        let c1 = Fq::rand(&mut rng);
-        let c5 = Fq::rand(&mut rng);
-        let mut a = Fq6::rand(&mut rng);
-        let mut b = a;
-
-        a.mul_by_014(&c0, &c1, &c5);
-        b.mul_assign(&Fq6 {
-            c0: Fq3 {
-                c0: c0,
-                c1: c1,
-                c2: Fq::zero(),
-            },
-            c1: Fq3 {
-                c0: Fq::zero(),
-                c1: c5,
-                c2: Fq::zero(),
-            },
-        });
-
-        assert_eq!(a, b);
-    }
-}
-
-#[test]
 fn fq6_field_tests() {
     use ff::PrimeField;
 

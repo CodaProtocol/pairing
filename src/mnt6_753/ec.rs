@@ -1271,10 +1271,6 @@ pub mod g1 {
             assert_eq!(tmp2, c.into_projective());
         }
     */
-    #[test]
-    fn g1_curve_tests() {
-        ::tests::curve::curve_tests::<G1>();
-    }
 }
 
 pub mod g2 {
@@ -1793,10 +1789,6 @@ pub mod g2 {
             );
         }
     */
-    #[test]
-    fn g2_curve_tests() {
-        ::tests::curve::curve_tests::<G2>();
-    }
 }
 pub use self::g1::*;
 pub use self::g2::*;
