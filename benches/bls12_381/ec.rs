@@ -1,7 +1,9 @@
+extern crate group;
+
 mod g1 {
     use rand::{Rand, SeedableRng, XorShiftRng};
 
-    use group::CurveProjective;
+    use super::group::CurveProjective;
     use pairing::bls12_381::*;
 
     #[bench]
@@ -65,7 +67,7 @@ mod g1 {
 mod g2 {
     use rand::{Rand, SeedableRng, XorShiftRng};
 
-    use group::CurveProjective;
+    use super::group::CurveProjective;
     use pairing::bls12_381::*;
 
     #[bench]

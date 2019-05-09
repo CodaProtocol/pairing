@@ -1,8 +1,10 @@
+extern crate group;
+
 mod g1 {
     use rand::{Rand, SeedableRng, XorShiftRng};
 
+    use super::group::CurveProjective;
     use pairing::mnt6_753::*;
-    use pairing::CurveProjective;
 
     #[bench]
     fn bench_g1_mul_assign(b: &mut ::test::Bencher) {
@@ -65,8 +67,8 @@ mod g1 {
 mod g2 {
     use rand::{Rand, SeedableRng, XorShiftRng};
 
+    use super::group::CurveProjective;
     use pairing::mnt6_753::*;
-    use pairing::CurveProjective;
 
     #[bench]
     fn bench_g2_mul_assign(b: &mut ::test::Bencher) {

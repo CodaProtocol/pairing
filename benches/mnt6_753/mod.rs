@@ -7,7 +7,7 @@ mod fr;
 use rand::{Rand, SeedableRng, XorShiftRng};
 
 use pairing::mnt6_753::*;
-use pairing::{CurveAffine, Engine};
+use pairing::{Engine, PairingCurveAffine};
 
 #[bench]
 fn bench_pairing_g1_preparation(b: &mut ::test::Bencher) {
@@ -70,7 +70,7 @@ fn bench_pairing_final_exponentiation(b: &mut ::test::Bencher) {
 
     let mut rng = XorShiftRng::from_seed([0x5dbe6259, 0x8d313d76, 0x3237db17, 0xe5bc0654]);
 
-    let v: Vec<Fq12> = (0..SAMPLES)
+    let v: Vec<Fq6> = (0..SAMPLES)
         .map(|_| {
             (
                 G1Affine::from(G1::rand(&mut rng)).prepare(),
