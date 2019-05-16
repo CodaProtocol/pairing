@@ -131,11 +131,11 @@ macro_rules! curve_impl {
 
                     let mut x3axb = self.x;
                     let mut ax = self.x;
-                    x3axb.square();
-                    x3axb.mul_assign(&self.x);
-                    ax.mul_assign(&Self::get_coeff_a());
-                    x3axb.add_assign(&ax);
-                    x3axb.add_assign(&Self::get_coeff_b());
+                    x3axb.square(); // x^2
+                    x3axb.mul_assign(&self.x); // x^3
+                    ax.mul_assign(&Self::get_coeff_a()); // ax
+                    x3axb.add_assign(&ax); // x^3 + ax
+                    x3axb.add_assign(&Self::get_coeff_b()); // x^3 + ax + b
 
                     y2 == x3axb
                 }
@@ -957,9 +957,7 @@ pub mod g1 {
     #[test]
     fn g1_generator() {
         use SqrtField;
-
         let mut x = Fq::zero();
-        let mut i = 0;
         loop {
             // y^2 = x^3 + ax + b
             let mut rhs = x;
@@ -981,21 +979,9 @@ pub mod g1 {
                     y: if yrepr < negyrepr { y } else { negy },
                     infinity: false,
                 };
-                assert!(!p.is_in_correct_subgroup_assuming_on_curve());
-
-                let g1 = p.scale_by_cofactor();
-                if !g1.is_zero() {
-                    assert_eq!(i, 4);
-                    let g1 = G1Affine::from(g1);
-
-                    assert!(g1.is_in_correct_subgroup_assuming_on_curve());
-
-                    assert_eq!(g1, G1Affine::one());
-                    break;
-                }
+                assert!(p.is_on_curve());
+                break;
             }
-
-            i += 1;
             x.add_assign(&Fq::one());
         }
     }
@@ -1639,7 +1625,6 @@ pub mod g2 {
     fn g2_generator() {
         use SqrtField;
         let mut x = Fq3::zero();
-        let mut i = 0;
         loop {
             let mut rhs = x;
             let mut ax = x;
@@ -1647,7 +1632,7 @@ pub mod g2 {
             rhs.mul_assign(&x); // x^3
             ax.mul_assign(&G2Affine::get_coeff_a()); // ax
             rhs.add_assign(&ax); //x^3 + ax
-            rhs.add_assign(&G2Affine::get_coeff_a()); // x^3 + ax + b// y^2 = x^3 + b
+            rhs.add_assign(&G2Affine::get_coeff_b()); // x^3 + ax + b
             if let Some(y) = rhs.sqrt() {
                 let mut negy = y;
                 negy.negate();
@@ -1656,17 +1641,9 @@ pub mod g2 {
                     y: if y < negy { y } else { negy },
                     infinity: false,
                 };
-                assert!(!p.is_in_correct_subgroup_assuming_on_curve());
-                let g2 = p.scale_by_cofactor();
-                if !g2.is_zero() {
-                    assert_eq!(i, 2);
-                    let g2 = G2Affine::from(g2);
-                    assert!(g2.is_in_correct_subgroup_assuming_on_curve());
-                    assert_eq!(g2, G2Affine::one());
-                    break;
-                }
+                assert!(p.is_on_curve());
+                break;
             }
-            i += 1;
             x.add_assign(&Fq3::one());
         }
     }
