@@ -1,4 +1,4 @@
-use super::fq::{Fq, FROBENIUS_COEFF_FQ3_C1, NEGATIVE_ONE};
+use super::fq::{Fq, FQ3_NQR_T, FQ3_T_MINUS_1, FROBENIUS_COEFF_FQ3_C1};
 use ff::{Field, SqrtField};
 use rand::{Rand, Rng};
 
@@ -25,7 +25,11 @@ impl Ord for Fq3 {
         match self.c2.cmp(&other.c2) {
             Ordering::Greater => Ordering::Greater,
             Ordering::Less => Ordering::Less,
-            Ordering::Equal => self.c1.cmp(&other.c1),
+            Ordering::Equal => match self.c1.cmp(&other.c1) {
+                Ordering::Greater => Ordering::Greater,
+                Ordering::Less => Ordering::Less,
+                Ordering::Equal => self.c0.cmp(&other.c0),
+            },
         }
     }
 }
@@ -39,16 +43,17 @@ impl PartialOrd for Fq3 {
 
 impl Fq3 {
     /// Multiply by quadratic nonresidue v.
-    // // nonresidue * c2, c0, c1
+    // (nonresidue * c2, c0, c1)
+    // TODO
     pub fn mul_by_nonresidue(&mut self) {
         use std::mem::swap;
-        swap(&mut self.c0, &mut self.c1);
-        swap(&mut self.c0, &mut self.c2);
-        self.c0.mul_by_nonresidue();
+        swap(&mut self.c0, &mut self.c1); // (c1, c0, c2)
+        swap(&mut self.c0, &mut self.c2); // (c2, c0, c1)
+        self.c0.mul_by_nonresidue(); // (nr * c2, c0, c1)
     }
 
     /// Norm of Fq3 as extension field in i over Fq
-    // TODO double check formula
+    // TODO
     pub fn norm(&self) -> Fq {
         let mut t0 = self.c0;
         let mut t1 = self.c1;
@@ -115,12 +120,7 @@ impl Field for Fq3 {
         self.c2.sub_assign(&other.c2);
     }
 
-    // TODO: change this
     fn frobenius_map(&mut self, power: usize) {
-        self.c0.frobenius_map(power);
-        self.c1.frobenius_map(power);
-        self.c2.frobenius_map(power);
-
         self.c1.mul_assign(&FROBENIUS_COEFF_FQ3_C1[power % 3]);
         self.c2.mul_assign(&FROBENIUS_COEFF_FQ3_C1[power % 3]);
     }
@@ -241,10 +241,14 @@ impl Field for Fq3 {
         // c2 = t1 - t4
         t1.sub_assign(&t4);
 
+        // (a * c0 + non_residue * (c * c1 + b * c2)).inverse()
+        // a * c0 (= t0)
         let mut ac = self.c0;
         ac.mul_assign(&t0);
+        // b * c2 (= t1)
         let mut bc = self.c1;
         bc.mul_assign(&t1);
+        // c * c1 + b * c2
         let mut cc = self.c2;
         cc.mul_assign(&t2);
         cc.add_assign(&bc);
@@ -258,6 +262,7 @@ impl Field for Fq3 {
                     c1: t,
                     c2: t,
                 };
+                // t6 * c0, t6 * c1, t6 * c2
                 tmp.c0.mul_assign(&t0);
                 tmp.c1.mul_assign(&t2);
                 tmp.c2.mul_assign(&t1);
@@ -269,72 +274,79 @@ impl Field for Fq3 {
     }
 }
 
+fn pow(base: &Fq3, exp: [u64; 36]) -> Fq3 {
+    let mut res = Fq3::one();
+
+    let mut found_one = false;
+
+    /*
+          let n = t.as_ref().len() * 64;
+          for i in BitIterator { t, n }
+    */
+    // BitIterator is from pairing
+    for i in super::BitIterator::new(&exp[..]) {
+        if found_one {
+            res.square();
+        } else {
+            found_one = i;
+        }
+
+        if i {
+            res.mul_assign(&base);
+        }
+    }
+    res
+}
+
+fn legendre(x: &Fq3) -> ::ff::LegendreSymbol {
+    x.norm().legendre()
+}
+
 impl SqrtField for Fq3 {
     fn legendre(&self) -> ::ff::LegendreSymbol {
-        self.norm().legendre()
+        legendre(self)
     }
 
     fn sqrt(&self) -> Option<Self> {
-        if self.is_zero() {
-            Some(Self::zero())
-        } else {
-            // a1 = self^((q - 3) / 4)
-            let mut a1 = self.pow([
-                7012908782648847503,
-                12415085490404409897,
-                8210311414928425648,
-                5862058578740071598,
-                11469729392362745596,
-                7019052767685852227,
-                2837098043206457436,
-                9283724577292971773,
-                9152542750718193568,
-                1171336691269200269,
-                10960987759484218791,
-                147254559291478,
-            ]);
-            let mut alpha = a1;
-            alpha.square();
-            alpha.mul_assign(self);
-            let mut a0 = alpha;
-            a0.frobenius_map(1);
-            a0.mul_assign(&alpha);
+        match self.legendre() {
+            Zero => Some(*self),
+            QuadraticNonResidue => None,
+            QuadraticResidue => {
+                // size_t v = Fp3_model<n,modulus>::s;
+                let mut v: i64 = 30;
+                // Fp3_model<n,modulus> z = Fp3_model<n,modulus>::nqr_to_t;
+                let mut z: Fq3 = FQ3_NQR_T.clone();
+                // Fp3_model<n,modulus> w = (*this)^Fp3_model<n,modulus>::t_minus_1_over_2;
+                let w0: Fq3 = pow(&self, FQ3_T_MINUS_1);
+                // Fp3_model<n,modulus> x = (*this) * w;
+                let mut x = w0.clone();
+                x.mul_assign(&self);
+                // Fp3_model<n,modulus> b = x * w; // b = (*this)^t
+                let mut b = x.clone();
+                b.mul_assign(&w0);
 
-            let neg1 = Fq3 {
-                c0: NEGATIVE_ONE,
-                c1: Fq::zero(),
-                c2: Fq::zero(),
-            };
-            if a0 == neg1 {
-                None
-            } else {
-                a1.mul_assign(self);
-                if alpha == neg1 {
-                    a1.mul_assign(&Fq3 {
-                        c0: Fq::zero(),
-                        c1: Fq::one(),
-                        c2: Fq::zero(),
-                    });
-                } else {
-                    alpha.add_assign(&Fq3::one());
-                    // alpha = alpha^((q - 1) / 2)
-                    alpha = alpha.pow([
-                        8952090460646557792,
-                        12053854763974677243,
-                        9641529845439751898,
-                        12837171121098086967,
-                        16818027744526710988,
-                        7101622064864510953,
-                        9280519145517036881,
-                        6573029651422701660,
-                        4502900421422056802,
-                        3469838669297007527,
-                        14231339953243421923,
-                        430056655442671,
-                    ]);
-                    a1.mul_assign(&alpha);
+                while b != Self::one() {
+                    let mut m = 0;
+                    let mut b2m = b;
+                    while b2m != Self::one() {
+                        b2m.square();
+                        m += 1;
+                    }
+
+                    let mut j = v - m - 1;
+                    while j > 0 {
+                        z.square();
+                        j = j - 1;
+                    } // z^2^(v-m-1)
+
+                    x.mul_assign(&z);
+
+                    z.square();
+                    b.mul_assign(&z);
+                    v = m;
                 }
-                Some(a1)
+
+                Some(x)
             }
         }
     }
@@ -345,5 +357,6 @@ fn fq3_field_tests() {
     use ff::PrimeField;
 
     ::tests::field::random_field_tests::<Fq3>();
-    ::tests::field::random_frobenius_tests::<Fq3, _>(super::fq::Fq::char(), 13);
+    ::tests::field::random_sqrt_tests::<Fq3>();
+    //   ::tests::field::random_frobenius_tests::<Fq3, _>(super::fq::Fq::char(), 13);
 }

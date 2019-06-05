@@ -130,11 +130,9 @@ macro_rules! curve_impl {
                     y2.square();
 
                     let mut x3axb = self.x;
-                    let mut ax = self.x;
                     x3axb.square(); // x^2
-                    x3axb.mul_assign(&self.x); // x^3
-                    ax.mul_assign(&Self::get_coeff_a()); // ax
-                    x3axb.add_assign(&ax); // x^3 + ax
+                    x3axb.add_assign(&Self::get_coeff_a()); // x^2 + a
+                    x3axb.mul_assign(&self.x); // x^3 + ax
                     x3axb.add_assign(&Self::get_coeff_b()); // x^3 + ax + b
 
                     y2 == x3axb
@@ -961,12 +959,10 @@ pub mod g1 {
         loop {
             // y^2 = x^3 + ax + b
             let mut rhs = x;
-            let mut ax = x;
             rhs.square(); // x^2
-            rhs.mul_assign(&x); // x^3
-            ax.mul_assign(&G1Affine::get_coeff_a()); // ax
-            rhs.add_assign(&ax); //x^3 + ax
-            rhs.add_assign(&G1Affine::get_coeff_a()); // x^3 + ax + b
+            rhs.add_assign(&G1Affine::get_coeff_a()); // x^2 + a
+            rhs.mul_assign(&x); // x^3 + ax
+            rhs.add_assign(&G1Affine::get_coeff_b()); // x^3 + ax + b
 
             if let Some(y) = rhs.sqrt() {
                 let yrepr = y.into_repr();
@@ -1627,11 +1623,9 @@ pub mod g2 {
         let mut x = Fq3::zero();
         loop {
             let mut rhs = x;
-            let mut ax = x;
             rhs.square(); // x^2
-            rhs.mul_assign(&x); // x^3
-            ax.mul_assign(&G2Affine::get_coeff_a()); // ax
-            rhs.add_assign(&ax); //x^3 + ax
+            rhs.add_assign(&G2Affine::get_coeff_a()); // x^2 + a
+            rhs.mul_assign(&x); // x^3 + ax
             rhs.add_assign(&G2Affine::get_coeff_b()); // x^3 + ax + b
             if let Some(y) = rhs.sqrt() {
                 let mut negy = y;

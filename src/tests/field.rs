@@ -32,6 +32,9 @@ pub fn random_sqrt_tests<F: SqrtField>() {
         let mut negb = b;
         negb.negate();
 
+        println!("{}", a);
+        println!("{}", b);
+        println!("{}", negb);
         assert!(a == b || a == negb);
     }
 
