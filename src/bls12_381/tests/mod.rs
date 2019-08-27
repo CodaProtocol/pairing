@@ -1,6 +1,3 @@
-use ff::PrimeFieldRepr;
-use group::{CurveAffine, CurveProjective, EncodedPoint, GroupDecodingError};
-
 use super::*;
 use *;
 

@@ -1,4 +1,4 @@
-use super::fq::{Fq, FQ3_NQR_T, FQ3_T_MINUS_1, FROBENIUS_COEFF_FQ3_C1};
+use super::fq::{Fq, FQ3_NQR_T, FQ3_T_MINUS_1, FROBENIUS_COEFF_FQ3_C1, NEGATIVE_ONE};
 use ff::{Field, SqrtField};
 use rand::{Rand, Rng};
 
@@ -279,10 +279,6 @@ fn pow(base: &Fq3, exp: [u64; 36]) -> Fq3 {
 
     let mut found_one = false;
 
-    /*
-          let n = t.as_ref().len() * 64;
-          for i in BitIterator { t, n }
-    */
     // BitIterator is from pairing
     for i in super::BitIterator::new(&exp[..]) {
         if found_one {
@@ -313,17 +309,19 @@ impl SqrtField for Fq3 {
             QuadraticNonResidue => None,
             QuadraticResidue => {
                 // size_t v = Fp3_model<n,modulus>::s;
-                let mut v: i64 = 30;
+                // let mut v = FQ3_S.clone();
+                let mut v = 30;
                 // Fp3_model<n,modulus> z = Fp3_model<n,modulus>::nqr_to_t;
-                let mut z: Fq3 = FQ3_NQR_T.clone();
+                let mut z = FQ3_NQR_T.clone();
                 // Fp3_model<n,modulus> w = (*this)^Fp3_model<n,modulus>::t_minus_1_over_2;
-                let w0: Fq3 = pow(&self, FQ3_T_MINUS_1);
+                let mut w: Fq3 = pow(&self, FQ3_T_MINUS_1);
                 // Fp3_model<n,modulus> x = (*this) * w;
-                let mut x = w0.clone();
+
+                let mut x: Fq3 = w.clone();
                 x.mul_assign(&self);
                 // Fp3_model<n,modulus> b = x * w; // b = (*this)^t
-                let mut b = x.clone();
-                b.mul_assign(&w0);
+                let mut b: Fq3 = x.clone();
+                b.mul_assign(&w);
 
                 while b != Self::one() {
                     let mut m = 0;
@@ -334,15 +332,15 @@ impl SqrtField for Fq3 {
                     }
 
                     let mut j = v - m - 1;
+                    let mut w = z;
                     while j > 0 {
-                        z.square();
-                        j = j - 1;
-                    } // z^2^(v-m-1)
+                        w.square();
+                        --j;
+                    } // w = z^2^(v-m-1)
 
-                    x.mul_assign(&z);
-
-                    z.square();
+                    w.square();
                     b.mul_assign(&z);
+                    x.mul_assign(&w);
                     v = m;
                 }
 
@@ -358,5 +356,5 @@ fn fq3_field_tests() {
 
     ::tests::field::random_field_tests::<Fq3>();
     ::tests::field::random_sqrt_tests::<Fq3>();
-    //   ::tests::field::random_frobenius_tests::<Fq3, _>(super::fq::Fq::char(), 13);
+    ::tests::field::random_frobenius_tests::<Fq3, _>(super::fq::Fq::char(), 13);
 }
